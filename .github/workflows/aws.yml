@@ -10,28 +10,36 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the code
+      # Checkout the code
       - name: Checkout code
         uses: actions/checkout@master
 
-      # Step 2: Log in to Amazon ECR
+      # Configure AWS Credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          region: ${{ secrets.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          
+      # Log in to Amazon ECR
       - name: Log in to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
         with:
           region: ${{ secrets.AWS_REGION }}
 
-      # Step 3: Build the Docker image
+      # SBuild the Docker image
       - name: Build Docker image
         run: |
           docker build -t html-hello-world .
 
-      # Step 4: Tag the Docker image
+      # Tag the Docker image
       - name: Tag Docker image
         run: |
           docker tag html-hello-world:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:latest
 
-      # Step 5: Push the Docker image to Amazon ECR
+      # Push the Docker image to Amazon ECR
       - name: Push to Amazon ECR
         run: |
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:latest
